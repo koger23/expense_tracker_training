@@ -4,40 +4,60 @@ import Input from "./Input";
 import Button from "../../components/ExpensesOutput/UI/Button";
 import { getFormattedDate } from "../../util/date";
 
-function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues}) {
-  const [inputValues, setInputValues] = useState({
-    amount: defaultValues ? defaultValues.amount.toString() : "",
-    date: defaultValues ? getFormattedDate(defaultValues.date) : "",
-    description: defaultValues ? defaultValues.description : "",
+function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues }) {
+  const [inputs, setInputs] = useState({
+    amount: {
+      value: defaultValues ? defaultValues.amount.toString() : "",
+      isValid: true,
+    },
+    date: {
+        value: defaultValues ? getFormattedDate(defaultValues.date) : "",
+        isValid: true, 
+    },
+    description: {
+        value: defaultValues ? defaultValues.description : "",
+        isValid: true, 
+    },
   });
 
   function inputChangedHandler(inputIdentifier, enteredValues) {
-    setInputValues((currentInputValues) => {
+    setInputs((currentInputs) => {
       return {
-        ...currentInputValues,
-        [inputIdentifier]: enteredValues, // standard JS, target property dynamically
+        ...currentInputs,
+        [inputIdentifier]: { value: enteredValues, isValid: true }, // standard JS, target property dynamically
       };
     });
   }
 
   function submitHandler() {
     const expenseData = {
-        amount: +inputValues.amount,
-        date: new Date(inputValues.date),
-        description: inputValues.description,
+      amount: +inputs.amount.value,
+      date: new Date(inputs.date.value),
+      description: inputs.description.value,
     };
 
-    const amountIsValid = !isNaN(expenseData.amount) && expenseData.amount > 0;
-    const dateIsValid = expenseData.date.toString() !== 'Invalid Date';
-    const descriptionIsvalid = expenseData.description.trim().length > 0;
+    const IsAmountValid = !isNaN(expenseData.amount) && expenseData.amount > 0;
+    const IsDateValid = expenseData.date.toString() !== "Invalid Date";
+    const IsDescriptionValid = expenseData.description.trim().length > 0;
 
-    if (!amountIsValid || !descriptionIsvalid || !dateIsValid) {
-        Alert.alert("Invalid input", "Please check your input values!");
-        return;
+    if (!IsAmountValid || !IsDescriptionValid || !IsDateValid) {
+      // Alert.alert("Invalid input", "Please check your input values!");
+      setInputs((currentInputs) => {
+        return {
+            amount: { value: currentInputs.amount.value, isValid: IsAmountValid },
+            date: { value: currentInputs.date.value, isValid: IsDateValid },
+            description: { value: currentInputs.description.value, isValid: IsDescriptionValid },
+        }
+      })
+      return;
     }
     onSubmit(expenseData);
-
   }
+
+  const isFormInvalid = 
+    !inputs.amount.isValid || 
+    !inputs.date.isValid || 
+    !inputs.description.isValid;
 
   return (
     <View style={styles.form}>
@@ -49,7 +69,7 @@ function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues}) {
           textInputConfig={{
             keyboardType: "decimal-pad",
             onChangeText: inputChangedHandler.bind(this, "amount"), // enteredValues automatically added
-            value: inputValues.amount, // two-way binding
+            value: inputs.amount.value, // two-way binding
           }}
         />
         <Input
@@ -59,7 +79,7 @@ function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues}) {
             placeholder: "YYYY-MM-DD",
             maxLength: 10,
             onChangeText: inputChangedHandler.bind(this, "date"), // enteredValues automatically added
-            value: inputValues.date, // two-way binding
+            value: inputs.date.value, // two-way binding
           }}
         />
       </View>
@@ -68,9 +88,10 @@ function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues}) {
         textInputConfig={{
           multiline: true,
           onChangeText: inputChangedHandler.bind(this, "description"), // enteredValues automatically added
-          value: inputValues.description, // two-way binding
+          value: inputs.description.value, // two-way binding
         }}
       />
+      {isFormInvalid && <Text>Invalid input values - please check your input data!</Text>}
       <View style={styles.buttonsContainer}>
         <Button style={styles.button} mode="flat" onPress={onCancel}>
           Cancel
