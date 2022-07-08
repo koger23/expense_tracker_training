@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Alert } from "react-native";
 import Input from "./Input";
 import Button from "../../components/ExpensesOutput/UI/Button";
 import { getFormattedDate } from "../../util/date";
+import { GlobalStyles } from "../../constants/styles";
 
 function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues }) {
   const [inputs, setInputs] = useState({
@@ -62,10 +63,12 @@ function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues }) {
   return (
     <View style={styles.form}>
       <Text style={styles.title}>Your Expense</Text>
+      {isFormInvalid && <Text style={styles.errorText}>Invalid input values - please check your input data!</Text>}
       <View style={styles.amountAndDate}>
         <Input
           label="Amount"
           style={styles.rowInput}
+          invalid={!inputs.amount.isValid}
           textInputConfig={{
             keyboardType: "decimal-pad",
             onChangeText: inputChangedHandler.bind(this, "amount"), // enteredValues automatically added
@@ -75,6 +78,7 @@ function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues }) {
         <Input
           label="Date"
           style={styles.rowInput}
+          invalid={!inputs.date.isValid}
           textInputConfig={{
             placeholder: "YYYY-MM-DD",
             maxLength: 10,
@@ -85,13 +89,13 @@ function ExpenseForm({ submitButtonLabel, onCancel, onSubmit, defaultValues }) {
       </View>
       <Input
         label="Description"
+        invalid={!inputs.description.isValid}
         textInputConfig={{
           multiline: true,
           onChangeText: inputChangedHandler.bind(this, "description"), // enteredValues automatically added
           value: inputs.description.value, // two-way binding
         }}
       />
-      {isFormInvalid && <Text>Invalid input values - please check your input data!</Text>}
       <View style={styles.buttonsContainer}>
         <Button style={styles.button} mode="flat" onPress={onCancel}>
           Cancel
@@ -132,4 +136,9 @@ const styles = StyleSheet.create({
   button: {
     marginHorizontal: 8,
   },
+  errorText: {
+    textAlign: 'center',
+    color: GlobalStyles.colors.error500,
+    margin: 8,
+  }
 });
