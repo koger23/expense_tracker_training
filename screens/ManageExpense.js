@@ -1,10 +1,9 @@
 import { useContext, useLayoutEffect } from "react";
-import { View, Pressable, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { GlobalStyles } from "../constants/styles";
-import { Ionicons } from "@expo/vector-icons";
-import Button from "../components/ExpensesOutput/UI/Button";
 import IconButton from "../components/ExpensesOutput/UI/IconButton";
 import { ExpensesContext } from "../store/expenses-context";
+import ExpenseForm from "../components/ManageExpense/ExpenseForm";
 
 function ManageExpense({ route, navigation }) {
   const expenseCtx = useContext(ExpensesContext);
@@ -27,33 +26,22 @@ function ManageExpense({ route, navigation }) {
     navigation.goBack();
   }
 
-  function confirmHandler() {
+  function confirmHandler(expenseData) {
     if (isEditing) {
-      expenseCtx.updateExpense(editedExpenseId, {
-        description: "Update Test",
-        amount: 99.99,
-        date: new Date("2022-07-06"),
-      });
+      expenseCtx.updateExpense(editedExpenseId, expenseData);
     } else {
-      expenseCtx.addExpense({
-        description: "Add Test",
-        amount: 99.99,
-        date: new Date("2022-07-06"),
-      });
+      expenseCtx.addExpense(expenseData);
     }
     navigation.goBack();
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.buttonsContainer}>
-        <Button style={styles.button} mode="flat" onPress={cancelHandler}>
-          Cancel
-        </Button>
-        <Button style={styles.button} onPress={confirmHandler}>
-          {isEditing ? "Update" : "Add"}
-        </Button>
-      </View>
+      <ExpenseForm
+        onCancel={cancelHandler}
+        onSubmit={confirmHandler}
+        submitButtonLabel={isEditing ? "Update" : "Add"}
+      />
       {isEditing && (
         <View style={styles.deleteContainer}>
           <IconButton
@@ -76,11 +64,6 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: GlobalStyles.colors.primary800,
   },
-  buttonsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
   deleteContainer: {
     maringTop: 16,
     paddingTop: 8,
@@ -95,9 +78,5 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.75,
-  },
-  button: {
-    minWidth: 120,
-    marginHorizontal: 8,
   },
 });
