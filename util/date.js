@@ -36,16 +36,16 @@ export function roundToHour(counter, roundToDecimals = 2) {
   return string;
 }
 
-export function getTime(task) {
-  return new Date(task.counter * 1000).toISOString().substring(11, 19);
+export function getTime(seconds) {
+  return new Date(seconds * 1000).toISOString().substring(11, 19);
 }
 
-export function getHours(task) {
-  let num = task.counter / 60 / 60;
+export function getHours(seconds) {
+  let num = seconds / 60 / 60;
   const result = roundToDecimals(num, 2);
   return result;
 }
 
-export function getHourAndTime(task) {
-  return `${getTime(task)} (${getHours(task)})`;
+export function getHourAndTime(seconds) {
+  return `${getTime(seconds)} (${getHours(seconds)})`;
 }

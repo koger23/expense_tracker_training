@@ -7,21 +7,37 @@ import { getHourAndTime } from "../util/date";
 
 function TaskList() {
   const tasksCtx = useContext(TasksContext);
-  const [acitveTask, setActiveTask] = useState(tasksCtx?.tasks[0]);
+  const [activeTask, setActiveTask] = useState(undefined);
   const navigation = useNavigation();
-
-  console.log(acitveTask);
+  const [tasks, setTasks] = useState([]);
+  const [totalSecs, setTotalSecs] = useState(0);
+  const [totalTime, setTotalTime] = useState("Total: " + getHourAndTime(0));
 
   useLayoutEffect(() => {
+    setTasks(tasksCtx.tasks);
+
     const total = tasksCtx.tasks.reduce((sum, task) => {
       return sum + task.counter;
     }, 0);
+    setTotalTime(totalTime);
+    setTotalSecs(total);
+
     navigation.setOptions({
-      title: "Total: " + getHourAndTime({ counter: total }),
+      title: "Total: " + getHourAndTime(totalSecs),
     });
+
+    // const timer = setInterval(() => {
+    //   if (activeTask) {
+    //     console.log(activeTask.id);
+
+    //     activeTask.counter++;
+    //   }
+    // }, 1000);
+
+    // return () => clearInterval(timer);
   }, [navigation]);
 
-  if (tasksCtx.tasks.length === 0) {
+  if (tasks?.length === 0) {
     return (
       <View style={styles.notasks}>
         <Text>No tasks for today.</Text>
@@ -29,10 +45,62 @@ function TaskList() {
     );
   }
 
+  function countTotal(id) {
+    setTotalSecs(() => {
+      return totalSecs + 1;
+    });
+    const total = tasksCtx.tasks.reduce((sum, task) => {
+      return sum + task.counter;
+    }, 0);
+    setTotalTime(totalTime);
+    navigation.setOptions({
+      title: "Total: " + getHourAndTime(totalSecs),
+    });
+    //   taskId = taskToActivate.id;
+    // }
+    // tasksCtx.activateTask(taskId);
+
+    if (!id) {
+      const taskList = tasks;
+      taskList.map((task) => {
+        task.isactive = false;
+      });
+      setTasks(taskList);
+      return;
+    }
+
+    const taskToActivateIndex = tasks.findIndex((task) => {
+      return task.id === id;
+    });
+    const taskToActivate = tasks[taskToActivateIndex];
+    taskToActivateIndex.isactive = true;
+
+    // const restOfTheTasks = tasks.filter((task) => {
+    //   const isSame = task.id !== taskToActivateIndex.id;
+
+    //   if (!isSame) {
+    //     task.isactive = false;
+    //     return task;
+    //   }
+    // });
+    setActiveTask(taskToActivate);
+    console.log(taskToActivate);
+    // return setTasks([taskToActivate, ...restOfTheTasks]);
+  }
+
   return (
     <ScrollView style={styles.scrollview}>
-      {(tasksCtx.tasks || []).map((task, index) => {
-        return <TaskListItem key={index} index={index} task={task} />;
+      {(tasks || []).map((task, index) => {
+        return (
+          <TaskListItem
+            key={index}
+            id={task.id}
+            title={task.title}
+            counter={task.counter}
+            isactive={task.isactive}
+            onActivate={countTotal.bind(this, task.id)}
+          />
+        );
       })}
     </ScrollView>
   );

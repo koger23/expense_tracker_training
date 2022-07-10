@@ -4,15 +4,19 @@ import { Colors } from "../../constants/colors";
 import { useLayoutEffect, useState } from "react";
 import { getHours, getTime } from "../../util/date";
 
-function TaskListItem({ index, task, isDarkMode, navigation }) {
-  const [isActive, setActive] = useState(false);
+function TaskListItem({ id, title, counter, isactive, onActivate }) {
+  const [isActive, setActive] = useState(isactive);
   const [isExpanded, setExpanded] = useState(false);
+  const [time, setTime] = useState(counter);
 
   useLayoutEffect(() => {
-    setInterval(() => {
+    const timer = setInterval(() => {
       if (!isActive) return;
-      task.counter++;
+      const newValue = time + 1;
+      setTime(newValue);
+      onActivate();
     }, 1000);
+    return () => clearInterval(timer);
   });
 
   return (
@@ -24,14 +28,16 @@ function TaskListItem({ index, task, isDarkMode, navigation }) {
         <View style={styles.taskheader}>
           <View style={styles.timecontainer}>
             <View>
-              <Text style={styles.time}>{getTime(task)}</Text>
+              <Text style={styles.time}>{getTime(time)}</Text>
             </View>
             <View>
-              <Text style={styles.hour}>({getHours(task)})</Text>
+              <Text style={styles.hour}>
+                ({getHours(time)})
+              </Text>
             </View>
           </View>
           <View>
-            <Text style={styles.title}>{task.title}</Text>
+            <Text style={styles.title}>{title}</Text>
           </View>
         </View>
         <MaterialCommunityIcons
@@ -54,7 +60,13 @@ function TaskListItem({ index, task, isDarkMode, navigation }) {
             size={32}
             name={isActive ? "play" : "publish"}
             onPress={() => {
-              setActive(!isActive);
+              if (isActive) {
+                onActivate(null);
+                setActive(false);
+              } else {
+                onActivate(id);
+                setActive(true);
+              }
             }}
           />
         </View>
@@ -103,6 +115,7 @@ const styles = StyleSheet.create({
   },
   hour: {
     fontSize: 18,
+    marginLeft: 5
   },
   title: {
     fontSize: 14,
